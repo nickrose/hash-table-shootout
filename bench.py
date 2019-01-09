@@ -1,3 +1,10 @@
+""" Script to execute benchmarking tests on various hash table implementations
+
+    execute using
+        python bench.py
+
+    Nick Roseveare, Jan 2019
+"""
 import sys
 import subprocess
 import numpy as np
@@ -34,8 +41,10 @@ interval = 2*100*1000
 best_out_of = 5
 
 debug = 0
-outfile = open('output_results.txt', 'w')
-outfile_all_stats = open('output_results.stats.txt', 'w')
+# we have a small file for the minimum runtimes/usages found, and another for
+# with more statistics
+outfile = open('output_results.csv', 'w')
+outfile_all_stats = open('output_results.stats.csv', 'w')
 
 if len(sys.argv) > 1:
     benchtypes = sys.argv[1:]
@@ -45,38 +54,51 @@ else:
                   'read_random_full', 'read_miss_random_full',
                   'read_random_full_after_delete',
                   'iteration_random_full', 'delete_random_full',
-
                   'insert_small_string', 'insert_small_string_reserve',
                   'read_small_string', 'read_miss_small_string',
                   'read_small_string_after_delete',
                   'delete_small_string',
-
                   'insert_string', 'insert_string_reserve',
                   'read_string', 'read_miss_string',
                   'read_string_after_delete',
                   'delete_string']
 
 nkeys_range = range(minkeys, maxkeys + 1, interval)
+total = (len(programs) * len(nkeys_range) * len(benchtypes))
 if debug == 0:
-    iter_display = tqdm(total=len(programs) * len(nkeys_range) * len(benchtypes))
+    progress_bar = tqdm(total=total)
 count = 0
+if total > 0:
+    outfile.write(('test_type, nkeys, hash_table_algo, lf_min, mem_bytes_min, '
+        'runtime_sec_min'))
+    outfile_all_stats.write(
+        'test_type, nkeys, hash_table_algo, lf_min, lf_avg, lf_std, lf_max, '
+        'mem_bytes_min, mem_bytes_avg, mem_bytes_std, mem_bytes_max, '
+        'runtime_sec_min, runtime_sec_avg, runtime_sec_std, runtime_sec_max')
+
+rt_attempts = np.nan * np.ones(best_out_of, dtype=float)
+mu_attempts = np.nan * np.ones(best_out_of, dtype=int)
+lf_attempts = np.nan * np.ones(best_out_of, dtype=float)
+
 for nkey_idx, nkeys in enumerate(nkeys_range):
     for benchtype in benchtypes:
         for program in programs:
             if debug == 0:
-                iter_display.set_description((f'nkeys[{nkeys}] test[{benchtype}] '
-                    f'program[{program}]'))
-                iter_display.update(count)
                 count += 1
+                progress_bar.n = count
+                progress_bar.set_description((
+                    f'nkeys[{nkeys}] '
+                    f'test[{benchtype}] '
+                    f'program[{program}]'))
             if program.startswith('tsl_array_map') and 'string' not in benchtype:
                 continue
 
             fastest_attempt = np.inf
             fastest_attempt_data = ''
 
-            rt_attempts = np.nan * np.ones(best_out_of)
-            mu_attempts = np.nan * np.ones(best_out_of)
-            lf_attempts = np.nan * np.ones(best_out_of)
+            rt_attempts[:] = np.nan
+            mu_attempts[:] = np.nan
+            lf_attempts[:] = np.nan
             for attempt in range(best_out_of):
                 try:
                     output = subprocess.check_output(
@@ -88,12 +110,13 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                     load_factor = float(words[2])
                 except:
                     if debug:
-                        print("Error with %s" % str(['./build/' + program, str(nkeys), benchtype]))
+                        print("Error with %s" % str(['./build/' + program,
+                            str(nkeys), benchtype]))
                     break
 
-                rt_attempts[attempt] = np.round(runtime_seconds * 1e7) * 1e-7
+                rt_attempts[attempt] = np.round(runtime_seconds, decimals=7)
                 mu_attempts[attempt] = memory_usage_bytes
-                lf_attempts[attempt] = np.round(load_factor * 1e3) * 1e-3
+                lf_attempts[attempt] = np.round(load_factor, decimals=3)
 
                 if runtime_seconds < fastest_attempt:
                     fastest_attempt = runtime_seconds
@@ -110,26 +133,32 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                 # load factor
                 nonnan = lf_attempts[~np.isnan(rt_attempts)]
                 if nonnan.size:
-                    _min, mean, std, _max = nonnan.min(), nonnan.mean(), nonnan.std(), nonnan.max()
-                    verbose_line += ';' + ','.join(map(str, [_min, mean, std, _max]))
+                    _min, mean, std, _max = (nonnan.min(), nonnan.mean(),
+                        nonnan.std(), nonnan.max())
+                    verbose_line += ';' + ','.join(map(str,
+                        [_min, mean, std, _max]))
                 # memory used
                 nonnan = mu_attempts[~np.isnan(rt_attempts)]
                 if nonnan.size:
-                    _min, mean, std, _max = nonnan.min(), nonnan.mean(), nonnan.std(), nonnan.max()
-                    verbose_line += ';' + ','.join(map(str, [_min, mean, std, _max]))
+                    _min, mean, std, _max = (nonnan.min(), nonnan.mean(),
+                        nonnan.std(), nonnan.max())
+                    verbose_line += ';' + ','.join(map(str,
+                        [_min, mean, std, _max]))
                 # runtime seconds
                 nonnan = rt_attempts[~np.isnan(rt_attempts)]
                 if nonnan.size:
-                    _min, mean, std, _max = nonnan.min(), nonnan.mean(), nonnan.std(), nonnan.max()
-                    verbose_line += ';' + ','.join(map(str, [_min, mean, std, _max]))
+                    _min, mean, std, _max = (nonnan.min(), nonnan.mean(),
+                        nonnan.std(), nonnan.max())
+                    verbose_line += ',' + ','.join(map(str,
+                        [_min, mean, std, _max]))
 
                 outfile_all_stats.write(verbose_line)
 
-        # Print blank line
-        outfile.write('\n')
-        outfile_all_stats.write('\n')
-        if debug:
-            print('\n')
+            # Print blank line
+            outfile.write('\n')
+            outfile_all_stats.write('\n')
+            if debug:
+                print('\n')
 
 outfile.close()
 outfile_all_stats.close()
