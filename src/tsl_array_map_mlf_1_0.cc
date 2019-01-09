@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <string>
 #include <unordered_map>
-#include <tsl/array_map.h>
+#include <include/tsl/array_map.h>
 
 #include <experimental/string_view>
 template<class CharT>
@@ -17,7 +17,7 @@ typedef tsl::array_map<char, int64_t, str_hash<char>> str_hash_t;
 #define SETUP hash_t hash; hash.max_load_factor(1.0f); str_hash_t str_hash; str_hash.max_load_factor(1.0f);
 
 #define RESERVE_INT(size) { printf("array_map can't be used for integer benchmark"); exit(6); }
-#define RESERVE_STR(size) str_hash.reserve(size); 
+#define RESERVE_STR(size) str_hash.reserve(size);
 #define LOAD_FACTOR(map) map.load_factor()
 
 #define INSERT_INT_INTO_HASH(key, value) { printf("array_map can't be used for integer benchmark"); exit(6); }

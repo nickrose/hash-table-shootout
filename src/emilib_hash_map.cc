@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include <string>
-#include <emilib/hash_map.hpp>
+#include <backward/hash_map.hpp>
 
 typedef emilib::HashMap<int64_t, int64_t, std::hash<int64_t>> hash_t;
 typedef emilib::HashMap<std::string, int64_t, std::hash<std::string>> str_hash_t;
@@ -8,7 +8,7 @@ typedef emilib::HashMap<std::string, int64_t, std::hash<std::string>> str_hash_t
 #define SETUP hash_t hash; str_hash_t str_hash;
 
 #define RESERVE_INT(size) hash.reserve(size);
-#define RESERVE_STR(size) str_hash.reserve(size); 
+#define RESERVE_STR(size) str_hash.reserve(size);
 #define LOAD_FACTOR(map) 0.0f
 
 #define INSERT_INT_INTO_HASH(key, value) hash.insert(hash_t::value_type(key, value))
@@ -27,4 +27,3 @@ typedef emilib::HashMap<std::string, int64_t, std::hash<std::string>> str_hash_t
     if(str_hash.find(key) != str_hash.end()) { count++; }
 
 #include "template.c"
-

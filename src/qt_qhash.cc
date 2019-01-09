@@ -2,7 +2,7 @@
 #include <functional>
 #include <string>
 
-uint qHash(const std::string &key) {
+unsigned int qHash(const std::string &key) {
     return std::hash<std::string>()(key);
 }
 
@@ -13,7 +13,7 @@ typedef QHash<std::string, int64_t> str_hash_t;
 #define SETUP hash_t hash; str_hash_t str_hash;
 
 #define RESERVE_INT(size) hash.reserve(size);
-#define RESERVE_STR(size) str_hash.reserve(size); 
+#define RESERVE_STR(size) str_hash.reserve(size);
 #define LOAD_FACTOR(map) 0.0f
 
 #define INSERT_INT_INTO_HASH(key, value) hash.insert(key, value)
