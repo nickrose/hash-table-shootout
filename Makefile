@@ -3,7 +3,7 @@ CXX=clang++
 CXX_FLAGS=-O3 -march=native -std=c++14 -DNDEBUG
 LOCAL_INCLUDE=/usr/local/Cellar
 
-all: build/boost_unordered_map build/qt_qhash build/google_sparse_hash_map build/google_dense_hash_map_mlf_0_9 build/google_dense_hash_map build/libcuckoo_map build/tsl_hopscotch_map build/tsl_hopscotch_map_mlf_0_5 build/tsl_hopscotch_map_store_hash build/tsl_robin_map build/tsl_robin_map_mlf_0_9 build/tsl_robin_map_store_hash build/tsl_robin_pg_map build/tsl_sparse_map build/tsl_ordered_map #build/spp_sparse_hash_map build/emilib_hash_map  build/ska_flat_hash_map build/ska_flat_hash_map_power_of_two build/std_unordered_map
+all: build/boost_unordered_map build/qt_qhash build/google_sparse_hash_map build/google_dense_hash_map_mlf_0_9 build/google_dense_hash_map build/libcuckoo_map build/tsl_hopscotch_map build/tsl_hopscotch_map_mlf_0_5 build/tsl_hopscotch_map_store_hash build/tsl_robin_map build/tsl_robin_map_mlf_0_9 build/tsl_robin_map_store_hash build/tsl_robin_pg_map build/tsl_sparse_map build/tsl_ordered_map build/spp_sparse_hash_map #build/emilib_hash_map  build/ska_flat_hash_map build/ska_flat_hash_map_power_of_two build/std_unordered_map
 
 # build/std_unordered_map: src/std_unordered_map.cc src/template.c
 # 	$(CXX) $(CXX_FLAGS) -I/usr/local/Cellar/gcc/8.2.0/include/c++/8.2.0/debug/ -I/usr/local/Cellar/gcc/8.2.0/include/c++/8.2.0/x86_64-apple-darwin17.7.0/ -I/usr/local/Cellar/gcc/8.2.0/include/c++/8.2.0/  -lm -o build/std_unordered_map src/std_unordered_map.cc

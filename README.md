@@ -5,32 +5,37 @@ table types.
 ### Prerequisites
 
 * make
-* gcc and recent g++ (4.3-ish?...(Nick: I am use 8.2 with no problems)
+* gcc and recent g++ (4.3-ish?...(I am use 8.2 with no problems ~Nick))
 * boost
 * google-sparsehash
 * qt
 
 Most of the above can be install via apt-get / rpm / home-brew commands, e.g.,
-google-sparsehash, qt4, but even in this case, the full list and versions of
-homebrew-core must be made accessible via `brew tap homebrew/cask`.
+boost, google-sparsehash, qt4, but in some cases, the full list and versions
+of homebrew-core must be made accessible via `brew tap homebrew/cask`.
 
 The individual repositories for a few hash table types not accessible via a
-standard package manager call must also be checked out in this directory,
-including:
+standard package manager call must also be checked out, including:
 
-    array-hash [https://github.com/Tessil/array-hash.git]
-    hopscotch-map [https://github.com/Tessil/hopscotch-map.git]
-    libcuckoo [https://github.com/nickrose/libcuckoo.git]
-    ordered-map [https://github.com/Tessil/ordered-map.git]
-    robin-map [https://github.com/Tessil/robin-map.git]
-    sparse-map [https://github.com/Tessil/sparse-map.git]
-    sparsepp [https://github.com/greg7mdp/sparsepp.git]
+* array-hash [https://github.com/Tessil/array-hash.git]
+* hopscotch-map [https://github.com/Tessil/hopscotch-map.git]
+* libcuckoo [https://github.com/nickrose/libcuckoo.git]
+* ordered-map [https://github.com/Tessil/ordered-map.git]
+* robin-map [https://github.com/Tessil/robin-map.git]
+* sparse-map [https://github.com/Tessil/sparse-map.git]
+* sparsepp [https://github.com/greg7mdp/sparsepp.git]
 
-I have commented out the "standard" hash tables that I have been unable to
-easily find / install. I have also hard coded a LOCAL_INCLUDE path for use with
-brew (i.e., /usr/local/Cellar/), make sure your include are accessible off of
+These hash table library and includes must be cloned/checked-out in this
+directory (e.g., `./hash-table-shootout/libcuckoo`) for the relevant
+`-Ilibcuckoo` reference include (and similarly for the other) in the Makefile
+to work when compiling.
+
+I have commented out the "standard" hash tables both in the `Makefile` and in
+the `bench.py` script that I have been unable to easily find / install. I have
+also hard coded a `LOCAL_INCLUDE` path for use with
+brew (i.e., `/usr/local/Cellar/`), make sure your include are accessible off of
 this base path. There may be other include directories that must be on the
-standard or personalize include paths. The missing ska and emilib hash tables
+standard or personalize include paths. The missing `ska` and `emilib` hash tables
 could be installed, built, and tested, but I don't care about a complete
 comparison.
 
@@ -39,9 +44,10 @@ comparison.
 
 For executing the benchmark tests, run:
 
-$ make
-$ python bench.py
-$ python make_chart_data.py < output | python make_html.py
+
+        $ make
+        $ python bench.py
+        $ python make_chart_data.py < output | python make_html.py
 
 Your charts are now in charts.html.
 
