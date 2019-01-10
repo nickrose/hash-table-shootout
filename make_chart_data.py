@@ -1,7 +1,9 @@
-import sys, json
+import sys
+import json
 from collections import OrderedDict
 
-lines = [ line.strip() for line in sys.stdin if line.strip() ]
+lines = [line.strip() for line in sys.stdin
+    if (line.strip() and not(line.startswith('test_type,')))]
 
 by_benchtype = {}
 
@@ -12,15 +14,19 @@ for line in lines:
     runtime = float(runtime)
     load_factor = float(load_factor)
 
-    by_benchtype.setdefault("%s_runtime" % benchtype, {}).setdefault(program, []).append([nkeys, runtime, load_factor])
+    by_benchtype.setdefault("%s_runtime" % benchtype, {}).setdefault(
+        program, []).append([nkeys, runtime, load_factor])
     if benchtype in ('insert_random_full', 'insert_small_string', 'insert_string',
-                     'insert_random_full_reserve', 'insert_small_string_reserve', 'insert_string_reserve'):
-        by_benchtype.setdefault("%s_memory"  % benchtype, {}).setdefault(program, []).append([nkeys, nbytes, load_factor])
+                     'insert_random_full_reserve', 'insert_small_string_reserve',
+                     'insert_string_reserve'):
+        by_benchtype.setdefault("%s_memory" % benchtype, {}).setdefault(
+            program, []).append([nkeys, nbytes, load_factor])
 
 proper_names = OrderedDict([
     ('std_unordered_map', 'std::unordered_map'),
     ('google_dense_hash_map', 'google::dense_hash_map'),
     ('qt_qhash', 'QHash'),
+    ('libcuckoo_map', 'cuckoo_filter'),
     ('tsl_sparse_map', 'tsl::sparse_map'),
     ('tsl_hopscotch_map', 'tsl::hopscotch_map'),
     ('tsl_robin_map', 'tsl::robin_map'),
@@ -38,7 +44,7 @@ proper_names = OrderedDict([
     ('spp_sparse_hash_map', 'spp::sparse_hash_map'),
     ('emilib_hash_map', 'emilib::HashMap'),
     ('tsl_array_map', 'tsl::array_map'),
-    ('tsl_array_map_mlf_1_0', 'tsl::array_map (1.0 mlf)'),
+    ('tsl_array_map_mlf_1_0', 'tsl::array_map (1.0 mlf)')
 ])
 
 # do them in the desired order to make the legend not overlap the chart data
@@ -47,6 +53,7 @@ program_slugs = [
     'std_unordered_map',
     'google_dense_hash_map',
     'qt_qhash',
+    'libcuckoo_map',
     'tsl_sparse_map',
     'tsl_hopscotch_map',
     'tsl_robin_map',
@@ -64,19 +71,22 @@ program_slugs = [
     'spp_sparse_hash_map',
     'emilib_hash_map',
     'tsl_array_map',
-    'tsl_array_map_mlf_1_0',
+    'tsl_array_map_mlf_1_0'
 ]
 
 # hashmap which will be shown (checkbox checked)
 default_programs_show = [
-    'std_unordered_map',
-    'google_dense_hash_map',
-    'qt_qhash',
-    'tsl_sparse_map',
+    # 'std_unordered_map',
+    'boost_unordered_map',
+    # 'google_dense_hash_map',
+    # 'qt_qhash',
+    'libcuckoo_map',
+    # 'tsl_sparse_map',
     'tsl_hopscotch_map',
     'tsl_robin_map',
-    'tsl_hopscotch_map_store_hash',
-    'tsl_robin_map_store_hash']
+    # 'tsl_hopscotch_map_store_hash',
+    # 'tsl_robin_map_store_hash'
+]
 
 chart_data = {}
 
@@ -85,7 +95,7 @@ for i, (benchtype, programs) in enumerate(by_benchtype.items()):
     for j, program in enumerate(program_slugs):
         if program not in programs:
             continue
-        
+
         data = programs[program]
         chart_data[benchtype].append({
             'program': program,

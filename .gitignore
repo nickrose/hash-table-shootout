@@ -1,3 +1,4 @@
 build
-output
 charts.html
+output_results.csv
+output_results.stats.csv
