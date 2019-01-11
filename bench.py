@@ -34,47 +34,69 @@ programs = [
     'tsl_array_map',
     'tsl_array_map_mlf_1_0'
 ]
-
-minkeys = 2*100*1000
-maxkeys = 30*100*1000
-interval = 2*100*1000
-best_out_of = 5
+base_size = int(1e5)
+minkeys = 2 * base_size
+maxkeys = 30 * base_size
+interval = 2 * base_size
+best_out_of = 10
 
 debug = 0
 # we have a small file for the minimum runtimes/usages found, and another for
 # with more statistics
-outfile = open('output_results.csv', 'w')
-outfile_all_stats = open('output_results.stats.csv', 'w')
+outfile = 'output_results.csv'
+outfile_all_stats = 'output_results.stats.csv'
 
 if len(sys.argv) > 1:
     benchtypes = sys.argv[1:]
 else:
-    benchtypes = ['insert_random_shuffle_range', 'read_random_shuffle_range',
-                  'insert_random_full', 'insert_random_full_reserve',
-                  'read_random_full', 'read_miss_random_full',
-                  'read_random_full_after_delete',
-                  'iteration_random_full', 'delete_random_full',
-                  'insert_small_string', 'insert_small_string_reserve',
-                  'read_small_string', 'read_miss_small_string',
-                  'read_small_string_after_delete',
-                  'delete_small_string',
-                  'insert_string', 'insert_string_reserve',
-                  'read_string', 'read_miss_string',
-                  'read_string_after_delete',
-                  'delete_string']
+    benchtypes = [
+        'insert_random_shuffle_range',
+        'insert_random_full',
+        'insert_random_full_reserve',
 
-nkeys_range = range(minkeys, maxkeys + 1, interval)
+        'read_random_shuffle_range',
+        'read_random_full',
+        'read_miss_random_full',
+        'read_random_full_after_delete',
+
+        'delete_random_full',
+
+
+        'insert_string',
+        'insert_string_reserve',
+        'insert_small_string',
+        'insert_small_string_reserve',
+
+        'read_string',
+        'read_miss_string',
+        'read_string_after_delete',
+        'read_small_string',
+        'read_miss_small_string',
+        'read_small_string_after_delete',
+
+        'delete_string',
+        'delete_small_string',
+
+
+        'iteration_random_full'
+    ]
+
+nkeys_range = range(maxkeys, minkeys-1, -interval)
 total = (len(programs) * len(nkeys_range) * len(benchtypes))
 if debug == 0:
     progress_bar = tqdm(total=total)
 count = 0
 if total > 0:
-    outfile.write(('test_type, nkeys, hash_table_algo, lf_min, mem_bytes_min, '
-        'runtime_sec_min'))
-    outfile_all_stats.write(
-        'test_type, nkeys, hash_table_algo, lf_min, lf_avg, lf_std, lf_max, '
-        'mem_bytes_min, mem_bytes_avg, mem_bytes_std, mem_bytes_max, '
-        'runtime_sec_min, runtime_sec_avg, runtime_sec_std, runtime_sec_max')
+    with open(outfile, 'w') as file:
+        file.write(('test_type, nkeys, hash_table_algo, lf_min, mem_bytes_min, '
+            'runtime_sec_min'))
+        file.write('\n')
+    with open(outfile_all_stats, 'w') as file:
+        file.write(
+            'test_type, nkeys, hash_table_algo, lf_min, lf_avg, lf_std, lf_max, '
+            'mem_bytes_min, mem_bytes_avg, mem_bytes_std, mem_bytes_max, '
+            'runtime_sec_min, runtime_sec_avg, runtime_sec_std, runtime_sec_max')
+        file.write('\n')
 
 rt_attempts = np.nan * np.ones(best_out_of, dtype=float)
 mu_attempts = np.nan * np.ones(best_out_of, dtype=int)
@@ -108,10 +130,12 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                     runtime_seconds = float(words[0])
                     memory_usage_bytes = int(words[1])
                     load_factor = float(words[2])
+                except KeyboardInterrupt:
+                    sys.exit(1)
                 except:
                     if debug:
-                        print("Error with %s" % str(['./build/' + program,
-                            str(nkeys), benchtype]))
+                        print((f"Error with {('./build/' + program)}"
+                            f"[{nkeys}: {benchtype}]"))
                     break
 
                 rt_attempts[attempt] = np.round(runtime_seconds, decimals=7)
@@ -125,7 +149,12 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                             memory_usage_bytes, runtime_seconds]))
 
             if ~np.isinf(fastest_attempt):
-                outfile.write(fastest_attempt_data)
+
+                with open(outfile, 'a') as file:
+                    file.write(fastest_attempt_data)
+                    # Print blank line
+                    file.write('\n')
+
                 if debug:
                     print(fastest_attempt_data)
 
@@ -135,14 +164,14 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                 if nonnan.size:
                     _min, mean, std, _max = (nonnan.min(), nonnan.mean(),
                         nonnan.std(), nonnan.max())
-                    verbose_line += ';' + ','.join(map(str,
+                    verbose_line += ',' + ','.join(map(str,
                         [_min, mean, std, _max]))
                 # memory used
                 nonnan = mu_attempts[~np.isnan(rt_attempts)]
                 if nonnan.size:
                     _min, mean, std, _max = (nonnan.min(), nonnan.mean(),
                         nonnan.std(), nonnan.max())
-                    verbose_line += ';' + ','.join(map(str,
+                    verbose_line += ',' + ','.join(map(str,
                         [_min, mean, std, _max]))
                 # runtime seconds
                 nonnan = rt_attempts[~np.isnan(rt_attempts)]
@@ -152,13 +181,9 @@ for nkey_idx, nkeys in enumerate(nkeys_range):
                     verbose_line += ',' + ','.join(map(str,
                         [_min, mean, std, _max]))
 
-                outfile_all_stats.write(verbose_line)
+                with open(outfile_all_stats, 'a') as file:
+                    file.write(verbose_line)
+                    file.write('\n')
 
-            # Print blank line
-            outfile.write('\n')
-            outfile_all_stats.write('\n')
             if debug:
                 print('\n')
-
-outfile.close()
-outfile_all_stats.close()
