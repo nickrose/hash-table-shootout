@@ -150,6 +150,16 @@ int main(int argc, char ** argv) {
             INSERT_INT_INTO_HASH(keys[i], value);
         }
     }
+    else if(test_type == "insert_random_shuffle_range_reserve") {
+       const std::vector<std::int64_t> keys = get_random_shuffle_range_ints(num_keys);
+
+
+       RESERVE_INT(num_keys);
+       measurements m;
+       for(std::int64_t i = 0; i < num_keys; i++) {
+           INSERT_INT_INTO_HASH(keys[i], value);
+       }
+    }
 
     else if(test_type == "read_random_shuffle_range") {
         std::vector<std::int64_t> keys = get_random_shuffle_range_ints(num_keys);
@@ -159,6 +169,21 @@ int main(int argc, char ** argv) {
 
         std::shuffle(keys.begin(), keys.end(), generator);
 
+
+        measurements m;
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            FIND_INT_EXISTING_FROM_HASH(keys[i]);
+        }
+    }
+
+    else if(test_type == "read_random_shuffle_range_reserve") {
+        std::vector<std::int64_t> keys = get_random_shuffle_range_ints(num_keys);
+        RESERVE_INT(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys[i], value);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), generator);
 
         measurements m;
         for(std::int64_t i = 0; i < num_keys; i++) {
@@ -202,6 +227,22 @@ int main(int argc, char ** argv) {
         }
     }
 
+    else if(test_type == "read_random_full_reserve") {
+        std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        RESERVE_INT(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys[i], value);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), generator);
+
+
+        measurements m;
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            FIND_INT_EXISTING_FROM_HASH(keys[i]);
+        }
+    }
+
     else if(test_type == "read_miss_random_full") {
         const std::vector<std::int64_t> keys_insert = get_random_full_ints(num_keys, 0, std::numeric_limits<std::int64_t>::max());
         const std::vector<std::int64_t> keys_read = get_random_full_ints(num_keys, std::numeric_limits<std::int64_t>::min(), -3);
@@ -217,8 +258,49 @@ int main(int argc, char ** argv) {
         }
     }
 
+    else if(test_type == "read_miss_random_full_reserve") {
+        const std::vector<std::int64_t> keys_insert = get_random_full_ints(num_keys, 0, std::numeric_limits<std::int64_t>::max());
+        const std::vector<std::int64_t> keys_read = get_random_full_ints(num_keys, std::numeric_limits<std::int64_t>::min(), -3);
+
+        RESERVE_INT(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys_insert[i], value);
+        }
+
+
+        measurements m;
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            FIND_INT_MISSING_FROM_HASH(keys_read[i]);
+        }
+    }
     else if(test_type == "read_random_full_after_delete") {
         std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys[i], value);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), generator);
+        for(std::int64_t i = 0; i < num_keys / 2; i++) {
+            DELETE_INT_FROM_HASH(keys[i]);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), generator);
+
+
+        measurements m;
+        std::int64_t nb_found = 0;
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            FIND_INT_EXISTING_FROM_HASH_COUNT(keys[i], nb_found);
+        }
+
+        if(nb_found != num_keys / 2) {
+            std::cout << "error, duplicates" << std::endl;
+            std::exit(6);
+        }
+    }
+    else if(test_type == "read_random_full_after_delete_reserve") {
+        std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        RESERVE_INT(num_keys);
         for(std::int64_t i = 0; i < num_keys; i++) {
             INSERT_INT_INTO_HASH(keys[i], value);
         }
@@ -256,8 +338,38 @@ int main(int argc, char ** argv) {
         }
     }
 
+    else if(test_type == "iteration_random_full_reserve") {
+        const std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        RESERVE_INT(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys[i], value);
+        }
+
+
+        measurements m;
+        for(auto it = hash.begin(); it != hash.end(); ++it) {
+            CHECK_INT_ITERATOR_VALUE(it, value);
+        }
+    }
+
     else if(test_type == "delete_random_full") {
         std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            INSERT_INT_INTO_HASH(keys[i], value);
+        }
+
+        std::shuffle(keys.begin(), keys.end(), generator);
+
+
+        measurements m;
+        for(std::int64_t i = 0; i < num_keys; i++) {
+            DELETE_INT_FROM_HASH(keys[i]);
+        }
+    }
+
+    else if(test_type == "delete_random_full_reserve") {
+        std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
+        RESERVE_INT(num_keys);
         for(std::int64_t i = 0; i < num_keys; i++) {
             INSERT_INT_INTO_HASH(keys[i], value);
         }

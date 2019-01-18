@@ -9,6 +9,7 @@ import sys
 import subprocess
 import numpy as np
 from tqdm import tqdm
+import os
 
 programs = [
     # 'std_unordered_map',
@@ -34,6 +35,9 @@ programs = [
     'tsl_array_map',
     'tsl_array_map_mlf_1_0'
 ]
+
+newcsvfile = True
+
 base_size = int(1e5)
 minkeys = 2 * base_size
 maxkeys = 30 * base_size
@@ -43,6 +47,8 @@ best_out_of = 10
 debug = 0
 # we have a small file for the minimum runtimes/usages found, and another for
 # with more statistics
+# outfile = 'modified_cuckoo_compare.csv'
+# outfile_all_stats = 'modified_cuckoo_compare.stats.csv'
 outfile = 'output_results.csv'
 outfile_all_stats = 'output_results.stats.csv'
 
@@ -50,9 +56,21 @@ if len(sys.argv) > 1:
     benchtypes = sys.argv[1:]
 else:
     benchtypes = [
+
+        # 'insert_random_shuffle_range_reserve',
+        'insert_random_full_reserve',
+
+        # 'read_random_shuffle_range_reserve',
+        # 'read_random_full_reserve',
+        # 'read_miss_random_full_reserve',
+        # 'read_random_full_after_delete_reserve',
+
+        # 'delete_random_full_reserve',
+
+        # 'iteration_random_full_reserve'
+
         'insert_random_shuffle_range',
         'insert_random_full',
-        'insert_random_full_reserve',
 
         'read_random_shuffle_range',
         'read_random_full',
@@ -60,6 +78,8 @@ else:
         'read_random_full_after_delete',
 
         'delete_random_full',
+
+        'iteration_random_full'
 
 
         'insert_string',
@@ -77,8 +97,6 @@ else:
         'delete_string',
         'delete_small_string',
 
-
-        'iteration_random_full'
     ]
 
 nkeys_range = range(maxkeys, minkeys-1, -interval)
@@ -87,16 +105,18 @@ if debug == 0:
     progress_bar = tqdm(total=total)
 count = 0
 if total > 0:
-    with open(outfile, 'w') as file:
-        file.write(('test_type, nkeys, hash_table_algo, lf_min, mem_bytes_min, '
-            'runtime_sec_min'))
-        file.write('\n')
-    with open(outfile_all_stats, 'w') as file:
-        file.write(
-            'test_type, nkeys, hash_table_algo, lf_min, lf_avg, lf_std, lf_max, '
-            'mem_bytes_min, mem_bytes_avg, mem_bytes_std, mem_bytes_max, '
-            'runtime_sec_min, runtime_sec_avg, runtime_sec_std, runtime_sec_max')
-        file.write('\n')
+    if newcsvfile or not(os.path.isfile(outfile)):
+        with open(outfile, 'w') as file:
+            file.write(('test_type, nkeys, hash_table_algo, lf_min, mem_bytes_min, '
+                'runtime_sec_min'))
+            file.write('\n')
+    if newcsvfile or not(os.path.isfile(outfile_all_stats)):
+        with open(outfile_all_stats, 'w') as file:
+            file.write(
+                'test_type, nkeys, hash_table_algo, lf_min, lf_avg, lf_std, lf_max, '
+                'mem_bytes_min, mem_bytes_avg, mem_bytes_std, mem_bytes_max, '
+                'runtime_sec_min, runtime_sec_avg, runtime_sec_std, runtime_sec_max')
+            file.write('\n')
 
 rt_attempts = np.nan * np.ones(best_out_of, dtype=float)
 mu_attempts = np.nan * np.ones(best_out_of, dtype=int)
