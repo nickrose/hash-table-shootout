@@ -204,9 +204,8 @@ int main(int argc, char ** argv) {
     else if(test_type == "insert_random_full_reserve") {
         const std::vector<std::int64_t> keys = get_random_full_ints(num_keys);
 
-
-        measurements m;
         RESERVE_INT(num_keys);
+        measurements m;
         for(std::int64_t i = 0; i < num_keys; i++) {
             INSERT_INT_INTO_HASH(keys[i], value);
         }
